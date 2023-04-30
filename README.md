@@ -96,8 +96,8 @@ Ansible View is a simple Python-script, that allows for a better view over Ansib
     ```
 
 
-*** TODO ***
+***TODO***
 
 **List unique variables (occurring in single or few cases)**
 
-**Automated creation of the alias 'ansible-view' **
+**Automated creation of the alias 'ansible-view'**
