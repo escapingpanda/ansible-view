@@ -218,6 +218,14 @@ if __name__ == '__main__':
         for c in collected_host_vars:
             print(f'- { c } : { collected_host_vars[c] }')
         print()
+        print('Contents of the vars/globals.yml')
+        collected_global_vars = {}
+        if os.path.exists(os.path.join(args.path, 'vars', 'globals.yml')) and os.path.isfile(os.path.join(args.path, 'vars', 'globals.yml')):
+            collected_global_vars.update(read_vars_from_file(os.path.join(args.path, 'vars', 'globals.yml')))
+        for c in collected_global_vars:
+            print(f'- { c } : { collected_global_vars[c] }')
+        print()
+
         vars = get_host_variables(args.inventory, args.host)
         # iterate through host vars
         for x in collected_host_vars.keys():
@@ -225,18 +233,22 @@ if __name__ == '__main__':
                 if collected_host_vars[x][0].replace('"', '').strip() == vars[x].strip():
                     vars[x] = (vars[x], 'host_var')
                     collected_group_vars.pop(x, None)
+                    collected_global_vars.pop(x, None)
             elif type(vars[x]) == int:
                 if int(collected_host_vars[x][0]) == vars[x]:
                     vars[x] = (vars[x], 'host_var')
                     collected_group_vars.pop(x, None)
+                    collected_global_vars.pop(x, None)
             elif type(vars[x]) == float:
                 if float(collected_group_vars[x][0]) == vars[x]:
                     vars[x] = (vars[x], 'host_var')
                     collected_group_vars.pop(x, None)
+                    collected_global_vars.pop(x, None)
             elif type(vars[x]) == bool:
                 if (collected_host_vars[x][0].upper() == 'TRUE' and vars[x]) or (collected_host_vars[x][0].upper() == 'FALSE' and not vars[x]):
                     vars[x] = (vars[x], 'host_var')
                     collected_group_vars.pop(x, None)
+                    collected_global_vars.pop(x, None)
             else:
                 print('Unrecognized var type: {} - {}'.format(vars[x], type(vars[x])))
         # iterate through group vars
@@ -244,17 +256,24 @@ if __name__ == '__main__':
             if type(vars[x]) == str:
                 if collected_group_vars[x][0].replace('"', '').strip() == vars[x].strip():
                     vars[x] = (vars[x], 'group_var : ' + collected_group_vars[x][1])
+                    collected_global_vars.pop(x, None)
             elif type(vars[x]) == int:
                 if int(collected_group_vars[x][0]) == vars[x]:
                     vars[x] = (vars[x], 'group_var : ' + collected_group_vars[x][1])
+                    collected_global_vars.pop(x, None)
             elif type(vars[x]) == float:
                 if float(collected_group_vars[x][0]) == vars[x]:
                     vars[x] = (vars[x], 'group_var : ' + collected_group_vars[x][1])
+                    collected_global_vars.pop(x, None)
             elif type(vars[x]) == bool:
                 if (collected_group_vars[x][0].upper() == 'TRUE' and vars[x]) or (collected_group_vars[x][0].upper() == 'FALSE' and not vars[x]):
-                    vars[x] = (vars[x], 'group_var - ' + collected_group_vars[x][1])
+                    vars[x] = (vars[x], 'group_var : ' + collected_group_vars[x][1])
+                    collected_global_vars.pop(x, None)
             else:
                 print('Unrecognized var type: {} - {}'.format(vars[x], type(vars[x])))
+        # iterate global vars
+        for x in collected_global_vars.keys():
+                vars[x] = (collected_global_vars[x][0], 'global_var : ' + collected_global_vars[x][1] )
         print(f'Variables used by host {args.host}:')
         for v in vars:
             print(f'- { v } - { vars[v][0] } ({ vars[v][1] })')
